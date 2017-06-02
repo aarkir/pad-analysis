@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/molarity"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:text="@string/molarity"
+        android:gravity="center"
+        android:layout_weight="1"/>
+    <View
+        android:id="@+id/rectangle"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_weight="1"
+        android:background="@color/colorAccent"/>
+    <TextView
+        android:id="@+id/color"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_weight="1"
+        android:text="@string/color"
+        android:gravity="center"
+        android:layout_gravity="fill" />
+    <!--<TextView
+        android:id="@+id/grayscale"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:text="Grayscale"
+        android:gravity="center"/>-->
+
+</LinearLayout>
