@@ -2,24 +2,39 @@ package com.aarkir.padanalysis;
 
 import android.Manifest;
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainActivity extends AppCompatActivity
         implements PhotoFragment.PhotoDialogListener, MolarityFragment.MolarityFragmentListener {
 
+    /**
+     * PERMISSIONS
+     **/
+
+    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 0;
     private int tempColor;
     private ArrayList<Pair> list = new ArrayList<>(0);
     private PairAdapter pairAdapter;
@@ -34,7 +49,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         pairAdapter = new PairAdapter(this, list);
-        final ListView listview = (ListView) findViewById(R.id.layout);
+        final ListView listview = (ListView) findViewById(android.R.id.list);
+        listview.setEmptyView(findViewById(android.R.id.empty)); // necessary because activity is not list activity
         listview.setAdapter(pairAdapter);
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -57,6 +73,9 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.save:
+                save();
+                return true;
             case R.id.clear:
                 clear();
                 return true;
@@ -66,12 +85,50 @@ public class MainActivity extends AppCompatActivity
             case R.id.eval:
                 evaluateSample();
                 return true;
+            case R.id.sendEmail:
+                File file = save();
+                sendEmail(file);
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
     /** ACTIONS **/
+
+    private File save() {
+        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS) + File.separator + "pad-analysis";
+        File folder = new File(path);
+        folder.mkdirs();
+        String fileName = new SimpleDateFormat("yyyyMMddHHmm'.csv'").format(new Date());
+        File file = new File(folder, fileName);
+        try {
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(makeDataString());
+            myOutWriter.close();
+            fOut.flush();
+            fOut.close();
+        } catch (IOException e) {
+
+        }
+        Toast.makeText(this, "Saved!", Toast.LENGTH_LONG).show();
+        return file;
+    }
+
+    private void sendEmail(File file) {
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+        emailIntent.setType("text/plain");
+//        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {"aaronk3.14@gmail.com"});
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "PADAnalysis");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "Here's a document you sent from PADAnalysis.");
+        if (!file.exists() || !file.canRead()) {
+            return;
+        }
+        Uri uri = Uri.fromFile(file);
+        emailIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(emailIntent, "Pick an Email provider"));
+    }
 
     private void addSample() {
         DialogFragment photoFragment = new PhotoFragment();
@@ -88,7 +145,6 @@ public class MainActivity extends AppCompatActivity
         list.clear();
         pairAdapter.notifyDataSetChanged();
     }
-
 
     /** HELPER **/
     private void showResult(double molarity) {
@@ -119,6 +175,19 @@ public class MainActivity extends AppCompatActivity
         return molarities;
     }
 
+    private String makeDataString() {
+        String str = "Concentration,R,G,B,H,S,V,\n";
+        int color;
+        float[] hsv = new float[3];
+        for (Pair pair : list) {
+            color = pair.getColor();
+            str += pair.getMolarity() + "," + Color.red(color) + "," + Color.green(color) + "," + Color.blue(color);
+            Color.RGBToHSV(Color.red(color), Color.green(color), Color.blue(color), hsv);
+            str += "," + hsv[0] + "," + hsv[1] + "," + hsv[2] + "\n";
+        }
+        return str;
+    }
+
     /** FRAGMENT LISTENER METHODS **/
 
     @Override
@@ -142,10 +211,6 @@ public class MainActivity extends AppCompatActivity
         list.add(new Pair(tempColor, molarity));
         pairAdapter.notifyDataSetChanged();
     }
-
-    /** PERMISSIONS **/
-
-    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 0;
 
     private void requestPermissions() {
         // Assume thisActivity is the current activity

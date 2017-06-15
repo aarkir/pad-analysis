@@ -34,7 +34,8 @@ class PairAdapter extends ArrayAdapter<Pair> {
             float[] hsv = new float[3];
             Color.RGBToHSV(Color.red(intColor), Color.green(intColor), Color.blue(intColor), hsv);
             rectangle.setBackgroundColor(pair.getColor());
-            color.setText(""+hsv[0]+"\n"+hsv[1]+"\n"+hsv[2]);
+            color.setText("" + Color.red(intColor) + "\n" + Color.green(intColor) + "\n" + Color.blue(intColor));
+//            color.setText(""+hsv[0]+"\n"+hsv[1]+"\n"+hsv[2]);
         }
         return convertView;
     }

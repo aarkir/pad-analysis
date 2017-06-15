@@ -9,4 +9,11 @@
     <string name="clear">Clear</string>
     <string name="eval">Evaluate</string>
     <string name="add">Add</string>
+    <string name="save">Save</string>
+    <string name="sendEmail">Send Email</string>
+    <string name="empty">Add: Click on the plus ion on the top bar to add new data points. To add a data point, take a picture and input the molarity of the substance that caused that color.
+                \n\nEvaluate Sample: Take a new picture and predict the molarity based on linear regression of current data points.
+        \n\nSave: When clicking \'save\', a CSV file is saved to /data/padanalysis.
+        \n\nSend to email: Send CSV file to email.</string>
+    \n\nClear: Clears list of data points.
 </resources>
